@@ -1,6 +1,6 @@
 # orpheus_gui.py
 #
-# Copyright (c) 2025 Brandon Winterton
+# Copyright (c) 2025 DeRusto
 #
 # This file is part of Orpheus-dl GUI Wrapper.
 #
