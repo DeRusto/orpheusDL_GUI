@@ -51,17 +51,20 @@ class DownloadService:
         queue_items: List[QueueItem],
         config: DownloadConfig,
         completion_callback: Callable[[], None] = None
-    ) -> None:
+    ) -> bool:
         """Start batch download in background thread.
 
         Args:
             queue_items: List of (result, media_type) tuples to download.
             config: Download configuration.
             completion_callback: Optional callback to run when complete.
+
+        Returns:
+            bool: True if download started, False if already in progress.
         """
         if self.is_downloading:
             self._log("Download already in progress.\n")
-            return
+            return False
 
         self.is_downloading = True
         self._log("Starting batch download...\n")
@@ -73,6 +76,7 @@ class DownloadService:
             daemon=True
         )
         thread.start()
+        return True
 
     def _download_worker(
         self,

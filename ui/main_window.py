@@ -207,14 +207,13 @@ class OrpheusGUI(tk.Tk):
         self.batch_tab.get_download_button().config(state=tk.DISABLED)
 
         # Start download
-        self.download_service.download_batch(
+        if self.download_service.download_batch(
             self.download_queue.get_items(),
             download_config,
             self._on_download_complete
-        )
-
-        # Start monitoring logs
-        self._monitor_download_logs()
+        ):
+            # Start monitoring logs only if download started
+            self._monitor_download_logs()
 
     def _monitor_download_logs(self) -> None:
         """Poll the download service's log queue and update the text widget."""
