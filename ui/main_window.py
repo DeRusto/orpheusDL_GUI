@@ -7,6 +7,7 @@ all tabs and services.
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import queue
 
 from config.manager import ConfigManager
 from core.orpheus_client import OrpheusClient
@@ -62,9 +63,10 @@ class OrpheusGUI(tk.Tk):
         self.download_queue = DownloadQueue()
 
         # Services
+        # Pass None for log_callback as we will use queue-based polling
         self.download_service = DownloadService(
             self.orpheus_client,
-            self._log_download_output
+            log_callback=None
         )
 
         self.command_runner = CommandRunner(self._log_manual_output)
@@ -210,6 +212,24 @@ class OrpheusGUI(tk.Tk):
             download_config,
             self._on_download_complete
         )
+
+        # Start monitoring logs
+        self._monitor_download_logs()
+
+    def _monitor_download_logs(self) -> None:
+        """Poll the download service's log queue and update the text widget."""
+        log_queue = self.download_service.get_log_queue()
+
+        try:
+            while True:
+                msg = log_queue.get_nowait()
+                self._log_download_output(msg)
+        except queue.Empty:
+            pass
+
+        # Continue polling if still downloading or queue might have new items
+        if self.download_service.is_downloading or not log_queue.empty():
+            self.after(100, self._monitor_download_logs)
 
     def _handle_clear_queue(self) -> None:
         """Handle clearing the download queue."""
