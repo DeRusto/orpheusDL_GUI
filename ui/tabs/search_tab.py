@@ -161,11 +161,15 @@ class SearchTab:
         self.results_listbox.delete(0, tk.END)
         search_type = self.search_result_manager.get_search_type()
 
+        display_texts = []
         for i, (result, _) in enumerate(self.search_result_manager.get_all_results(), start=1):
             result_id = getattr(result, 'result_id', None)
             is_queued = self.download_queue.is_queued(result_id) if result_id else False
             display_text = SearchResultFormatter.format_result(result, search_type, i, is_queued)
-            self.results_listbox.insert(tk.END, display_text)
+            display_texts.append(display_text)
+
+        if display_texts:
+            self.results_listbox.insert(tk.END, *display_texts)
 
     def get_module_name(self) -> str:
         """Get the currently selected module name.
