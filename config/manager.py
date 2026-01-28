@@ -32,10 +32,11 @@ class ConfigManager:
             modules_dir = os.path.join(self.base_dir, "orpheus", "modules")
 
         if os.path.isdir(modules_dir):
-            modules = [
-                d for d in os.listdir(modules_dir)
-                if os.path.isdir(os.path.join(modules_dir, d)) and d not in ("__pycache__", "example")
-            ]
+            with os.scandir(modules_dir) as entries:
+                modules = [
+                    entry.name for entry in entries
+                    if entry.is_dir() and entry.name not in ("__pycache__", "example")
+                ]
             return modules
         else:
             return []
