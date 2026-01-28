@@ -7,6 +7,7 @@ all tabs and services.
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import threading
 
 from config.manager import ConfigManager
 from core.orpheus_client import OrpheusClient
@@ -120,32 +121,60 @@ class OrpheusGUI(tk.Tk):
         # Clear previous results
         self.search_result_manager.clear()
         self.search_tab.clear_output()
+        self.search_tab.append_output("Searching...\n")
 
+        # Start search in a separate thread
+        thread = threading.Thread(
+            target=self._perform_search_thread,
+            args=(module_name, search_type, query),
+            daemon=True
+        )
+        thread.start()
+
+    def _perform_search_thread(self, module_name: str, search_type: str, query: str) -> None:
+        """Perform search in a background thread."""
         try:
             # Load module and perform search
             module = self.orpheus.load_module(module_name)
             query_type = self.DownloadTypeEnum[search_type]
             results = module.search(query_type, query, limit=20)
 
-            if not results:
-                self.search_tab.append_output("No results found.\n")
-                return
-
-            # Store results
-            self.search_result_manager.set_results(results, query_type, search_type)
-
-            # Display results
-            for i, (result, _) in enumerate(self.search_result_manager.get_all_results(), start=1):
-                result_id = getattr(result, 'result_id', None)
-                is_queued = self.download_queue.is_queued(result_id) if result_id else False
-                display_text = SearchResultFormatter.format_result(result, search_type, i, is_queued)
-                self.search_tab.append_output(display_text + "\n")
-
-            # Update the results listbox
-            self.search_tab.refresh_results_display()
+            # Schedule success callback
+            self.after(0, self._on_search_complete, results, query_type, search_type, None)
 
         except Exception as e:
-            messagebox.showerror("Search Error", f"An error occurred during search:\n{e}")
+            # Schedule error callback
+            self.after(0, self._on_search_complete, None, None, None, e)
+
+    def _on_search_complete(self, results, query_type, search_type, error) -> None:
+        """Handle completion of the search.
+
+        Args:
+            results: Search results list.
+            query_type: Type of query used.
+            search_type: String representation of search type.
+            error: Exception if one occurred, else None.
+        """
+        if error:
+            messagebox.showerror("Search Error", f"An error occurred during search:\n{error}")
+            return
+
+        if not results:
+            self.search_tab.append_output("No results found.\n")
+            return
+
+        # Store results
+        self.search_result_manager.set_results(results, query_type, search_type)
+
+        # Display results
+        for i, (result, _) in enumerate(self.search_result_manager.get_all_results(), start=1):
+            result_id = getattr(result, 'result_id', None)
+            is_queued = self.download_queue.is_queued(result_id) if result_id else False
+            display_text = SearchResultFormatter.format_result(result, search_type, i, is_queued)
+            self.search_tab.append_output(display_text + "\n")
+
+        # Update the results listbox
+        self.search_tab.refresh_results_display()
 
     def _handle_add_to_queue(self, index: int) -> None:
         """Handle adding an item to the queue.
