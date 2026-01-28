@@ -22,20 +22,24 @@ class ConfigManager:
         self.base_dir = base_dir if base_dir is not None else os.path.dirname(__file__)
 
     def load_installed_modules(self) -> List[str]:
-        """Load the list of installed Orpheus-dl modules.
-
+        """
+        Get the names of installed Orpheus-dl modules from the modules directory.
+        
+        Searches for a "modules" directory under the configured base directory (falling back to "orpheus/modules") and returns the names of subdirectories found, excluding "__pycache__" and "example".
+        
         Returns:
-            List of module names found in the modules directory.
+            List[str]: Module directory names found; empty list if no modules directory exists.
         """
         modules_dir = os.path.join(self.base_dir, "modules")
         if not os.path.isdir(modules_dir):
             modules_dir = os.path.join(self.base_dir, "orpheus", "modules")
 
         if os.path.isdir(modules_dir):
-            modules = [
-                d for d in os.listdir(modules_dir)
-                if os.path.isdir(os.path.join(modules_dir, d)) and d not in ("__pycache__", "example")
-            ]
+            with os.scandir(modules_dir) as entries:
+                modules = [
+                    entry.name for entry in entries
+                    if entry.is_dir() and entry.name not in ("__pycache__", "example")
+                ]
             return modules
         else:
             return []
