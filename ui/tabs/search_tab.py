@@ -161,10 +161,11 @@ class SearchTab:
         self.results_listbox.delete(0, tk.END)
         search_type = self.search_result_manager.get_search_type()
 
+        queued_ids = self.download_queue.get_queued_ids()
         display_texts = []
         for i, (result, _) in enumerate(self.search_result_manager.get_all_results(), start=1):
             result_id = getattr(result, 'result_id', None)
-            is_queued = self.download_queue.is_queued(result_id) if result_id else False
+            is_queued = result_id in queued_ids if result_id else False
             display_text = SearchResultFormatter.format_result(result, search_type, i, is_queued)
             display_texts.append(display_text)
 
