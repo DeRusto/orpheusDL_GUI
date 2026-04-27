@@ -358,6 +358,9 @@ class OrpheusGUI(tk.Tk):
             self.download_batch_button.config(state=tk.NORMAL)
             return
 
+        # Get core download function outside the loop for performance
+        orpheus_core_download = self.orpheus_client.get_core_download_function()
+
         for result, media_type in self.download_queue:
             # Use the media type stored with the result
             media_id = result.result_id  # or use an alternate attribute if needed
@@ -366,7 +369,6 @@ class OrpheusGUI(tk.Tk):
             media_to_download = {module_name: [media_ident]}
             self.append_batch_log(f"Downloading: {result.name} (ID: {media_id})\n")
             try:
-                orpheus_core_download = self.orpheus_client.get_core_download_function()
                 orpheus_core_download(self.orpheus, media_to_download, self.third_party_modules, sdm, download_path)
                 self.append_batch_log(f"Download complete for {result.name} (ID: {media_id}).\n")
             except Exception as e:

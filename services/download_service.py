@@ -72,8 +72,15 @@ class DownloadService:
             if not os.path.isdir(config.download_path):
                 os.makedirs(config.download_path, exist_ok=True)
 
-            # Get core download function
+            # Get core download function and other required objects
             orpheus_core_download = self.orpheus_client.get_core_download_function()
+            MediaIdentification = self.orpheus_client.MediaIdentification
+
+            # Extract config attributes for performance
+            module_name = config.module_name
+            third_party_modules = config.third_party_modules
+            sdm = config.sdm
+            download_path = config.download_path
 
             # Process each queue item
             for result, media_type in queue_items:
@@ -81,12 +88,12 @@ class DownloadService:
                 result_name = getattr(result, 'name', 'Unknown')
 
                 # Create media identification
-                media_ident = self.orpheus_client.MediaIdentification(
+                media_ident = MediaIdentification(
                     media_type=media_type,
                     media_id=media_id
                 )
 
-                media_to_download = {config.module_name: [media_ident]}
+                media_to_download = {module_name: [media_ident]}
 
                 self.log_callback(f"Downloading: {result_name} (ID: {media_id})\n")
 
@@ -94,9 +101,9 @@ class DownloadService:
                     orpheus_core_download(
                         self.orpheus,
                         media_to_download,
-                        config.third_party_modules,
-                        config.sdm,
-                        config.download_path
+                        third_party_modules,
+                        sdm,
+                        download_path
                     )
                     self.log_callback(f"Download complete for {result_name} (ID: {media_id}).\n")
                 except Exception as e:
