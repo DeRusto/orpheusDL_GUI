@@ -20,6 +20,7 @@ class ConfigManager:
                      If None, uses the directory of the calling script.
         """
         self.base_dir = base_dir if base_dir is not None else os.path.dirname(__file__)
+        self._modules_cache: Optional[List[str]] = None
 
     def load_installed_modules(self) -> List[str]:
         """
@@ -30,6 +31,9 @@ class ConfigManager:
         Returns:
             List[str]: Module directory names found; empty list if no modules directory exists.
         """
+        if self._modules_cache is not None:
+            return self._modules_cache[:]
+
         modules_dir = os.path.join(self.base_dir, "modules")
         if not os.path.isdir(modules_dir):
             modules_dir = os.path.join(self.base_dir, "orpheus", "modules")
@@ -40,8 +44,10 @@ class ConfigManager:
                     entry.name for entry in entries
                     if entry.is_dir() and entry.name not in ("__pycache__", "example")
                 ]
-            return modules
+            self._modules_cache = modules
+            return self._modules_cache[:]
         else:
+            self._modules_cache = []
             return []
 
     def load_default_module(self) -> Optional[str]:
