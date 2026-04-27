@@ -167,11 +167,19 @@ class OrpheusGUI(tk.Tk):
         self.search_result_manager.set_results(results, query_type, search_type)
 
         # Display results
+        queued_ids = self.download_queue.get_queued_ids()
+        format_result = SearchResultFormatter.format_result
+        append_output = self.search_tab.append_output
+
+        output_buffer = []
         for i, (result, _) in enumerate(self.search_result_manager.get_all_results(), start=1):
             result_id = getattr(result, 'result_id', None)
-            is_queued = self.download_queue.is_queued(result_id) if result_id else False
-            display_text = SearchResultFormatter.format_result(result, search_type, i, is_queued)
-            self.search_tab.append_output(display_text + "\n")
+            is_queued = result_id in queued_ids if result_id else False
+            display_text = format_result(result, search_type, i, is_queued)
+            output_buffer.append(display_text + "\n")
+
+        if output_buffer:
+            append_output("".join(output_buffer))
 
         # Update the results listbox
         self.search_tab.refresh_results_display()
