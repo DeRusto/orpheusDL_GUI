@@ -6,7 +6,7 @@ and provides callbacks for UI updates.
 
 import os
 import threading
-from typing import List, Callable, Dict, Any
+from typing import List, Callable, Dict, Any, Sequence
 from core.types import QueueItem, DownloadConfig
 from core.orpheus_client import OrpheusClient
 
@@ -28,14 +28,14 @@ class DownloadService:
 
     def download_batch(
         self,
-        queue_items: List[QueueItem],
+        queue_items: Sequence[QueueItem],
         config: DownloadConfig,
         completion_callback: Callable[[], None] = None
     ) -> None:
         """Start batch download in background thread.
 
         Args:
-            queue_items: List of (result, media_type) tuples to download.
+            queue_items: Sequence of (result, media_type) tuples to download.
             config: Download configuration.
             completion_callback: Optional callback to run when complete.
         """
@@ -56,14 +56,14 @@ class DownloadService:
 
     def _download_worker(
         self,
-        queue_items: List[QueueItem],
+        queue_items: Sequence[QueueItem],
         config: DownloadConfig,
         completion_callback: Callable[[], None] = None
     ) -> None:
         """Worker thread for batch downloads.
 
         Args:
-            queue_items: List of (result, media_type) tuples to download.
+            queue_items: Sequence of (result, media_type) tuples to download.
             config: Download configuration.
             completion_callback: Optional callback to run when complete.
         """

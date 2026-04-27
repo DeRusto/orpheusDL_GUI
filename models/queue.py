@@ -4,7 +4,7 @@ This module handles the queue of items to be downloaded,
 including adding, removing, and tracking queued items.
 """
 
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Sequence
 from core.types import QueueItem
 
 
@@ -72,13 +72,13 @@ class DownloadQueue:
         self._queue.clear()
         self._queued_ids.clear()
 
-    def get_items(self) -> List[QueueItem]:
-        """Get all items in the queue.
+    def get_items(self) -> Sequence[QueueItem]:
+        """Get all items in the queue as a read-only sequence.
 
         Returns:
-            List of queue item tuples.
+            A read-only sequence of queue item tuples.
         """
-        return self._queue.copy()
+        return self._queue
 
     def get_queued_ids(self) -> Set[str]:
         """Get set of all queued IDs.
