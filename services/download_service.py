@@ -75,6 +75,8 @@ class DownloadService:
             # Get core download function and other required objects
             orpheus_core_download = self.orpheus_client.get_core_download_function()
             MediaIdentification = self.orpheus_client.MediaIdentification
+            orpheus_instance = self.orpheus
+            log_callback = self.log_callback
 
             # Extract config attributes for performance
             module_name = config.module_name
@@ -95,21 +97,21 @@ class DownloadService:
 
                 media_to_download = {module_name: [media_ident]}
 
-                self.log_callback(f"Downloading: {result_name} (ID: {media_id})\n")
+                log_callback(f"Downloading: {result_name} (ID: {media_id})\n")
 
                 try:
                     orpheus_core_download(
-                        self.orpheus,
+                        orpheus_instance,
                         media_to_download,
                         third_party_modules,
                         sdm,
                         download_path
                     )
-                    self.log_callback(f"Download complete for {result_name} (ID: {media_id}).\n")
+                    log_callback(f"Download complete for {result_name} (ID: {media_id}).\n")
                 except Exception as e:
-                    self.log_callback(f"Error downloading {result_name}: {e}\n")
+                    log_callback(f"Error downloading {result_name}: {e}\n")
 
-            self.log_callback("Batch processing complete.\n")
+            log_callback("Batch processing complete.\n")
 
         except Exception as e:
             self.log_callback(f"Fatal error during batch download: {e}\n")

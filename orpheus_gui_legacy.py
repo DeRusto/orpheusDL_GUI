@@ -358,21 +358,25 @@ class OrpheusGUI(tk.Tk):
             self.download_batch_button.config(state=tk.NORMAL)
             return
 
-        # Get core download function outside the loop for performance
+        # Get core download function and other required objects outside the loop for performance
         orpheus_core_download = self.orpheus_client.get_core_download_function()
+        MediaIdentification = self.MediaIdentification
+        orpheus_instance = self.orpheus
+        third_party_modules = self.third_party_modules
+        append_batch_log = self.append_batch_log
+        module_name = self.module_combo.get().strip()
 
         for result, media_type in self.download_queue:
             # Use the media type stored with the result
             media_id = result.result_id  # or use an alternate attribute if needed
-            module_name = self.module_combo.get().strip()
-            media_ident = self.MediaIdentification(media_type=media_type, media_id=media_id)
+            media_ident = MediaIdentification(media_type=media_type, media_id=media_id)
             media_to_download = {module_name: [media_ident]}
-            self.append_batch_log(f"Downloading: {result.name} (ID: {media_id})\n")
+            append_batch_log(f"Downloading: {result.name} (ID: {media_id})\n")
             try:
-                orpheus_core_download(self.orpheus, media_to_download, self.third_party_modules, sdm, download_path)
-                self.append_batch_log(f"Download complete for {result.name} (ID: {media_id}).\n")
+                orpheus_core_download(orpheus_instance, media_to_download, third_party_modules, sdm, download_path)
+                append_batch_log(f"Download complete for {result.name} (ID: {media_id}).\n")
             except Exception as e:
-                self.append_batch_log(f"Error downloading {result.name}: {e}\n")
+                append_batch_log(f"Error downloading {result.name}: {e}\n")
         self.append_batch_log("Batch processing complete.\n")
         self.download_batch_button.config(state=tk.NORMAL)
         self.download_queue.clear()
