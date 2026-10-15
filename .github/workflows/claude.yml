@@ -17,5 +17,6 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      actions: read # lets Claude read CI results on PRs
     uses: derusto/claude-config/.github/workflows/claude.yml@main
     secrets: inherit
