@@ -171,6 +171,24 @@ class SearchTab:
         if display_texts:
             self.results_listbox.insert(tk.END, *display_texts)
 
+    def update_result_display(self, index: int) -> None:
+        """Update a single search result's display status.
+
+        Args:
+            index: Index of the result to update.
+        """
+        result_tuple = self.search_result_manager.get_result(index)
+        if result_tuple:
+            result, _ = result_tuple
+            search_type = self.search_result_manager.get_search_type()
+            result_id = getattr(result, 'result_id', None)
+            is_queued = self.download_queue.is_queued(result_id) if result_id else False
+            display_text = SearchResultFormatter.format_result(result, search_type, index + 1, is_queued)
+
+            # Update only the specific item in the listbox
+            self.results_listbox.delete(index)
+            self.results_listbox.insert(index, display_text)
+
     def get_module_name(self) -> str:
         """Get the currently selected module name.
 

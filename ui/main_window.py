@@ -198,8 +198,8 @@ class OrpheusGUI(tk.Tk):
         display_text = f"{index+1}. {selected_result.name} (ID: {selected_result.result_id})"
         self.batch_tab.get_queue_listbox().insert(tk.END, display_text)
 
-        # Refresh search results to show queued indicator
-        self.search_tab.refresh_results_display()
+        # Update specific search result to show queued indicator
+        self.search_tab.update_result_display(index)
 
     # Batch tab callbacks
     def _handle_remove_from_queue(self, index: int) -> None:
@@ -211,8 +211,13 @@ class OrpheusGUI(tk.Tk):
         removed_item = self.download_queue.remove_item(index)
         if removed_item is not None:
             self.batch_tab.get_queue_listbox().delete(index)
-            # Refresh search results to remove queued indicator
-            self.search_tab.refresh_results_display()
+
+            # Find the index in search results and update its display
+            result_id = getattr(removed_item[0], 'result_id', None)
+            if result_id:
+                search_index = self.search_result_manager.find_index_by_id(result_id)
+                if search_index is not None:
+                    self.search_tab.update_result_display(search_index)
 
     def _handle_batch_download(self) -> None:
         """Handle starting the batch download."""

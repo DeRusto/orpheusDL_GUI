@@ -208,6 +208,20 @@ class SearchResultManager:
         """
         return self._search_type
 
+    def find_index_by_id(self, result_id: str) -> Optional[int]:
+        """Find the index of a result by its ID.
+
+        Args:
+            result_id: Result ID to look for.
+
+        Returns:
+            Index of the result, or None if not found.
+        """
+        for i, (result, _) in enumerate(self._results):
+            if getattr(result, "result_id", None) == result_id:
+                return i
+        return None
+
     def __len__(self) -> int:
         """Get the number of results.
 
